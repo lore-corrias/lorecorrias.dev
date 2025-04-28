@@ -1,0 +1,7 @@
+baseURL = 'https://justlel.me/'
+languageCode = 'en-us'
+title = "just's blog"
+
+[params]
+  defaultImage = "/images/default-share-image.jpg" # Path to your default image
+  twitterHandle = "@yourhandle" # Optional
