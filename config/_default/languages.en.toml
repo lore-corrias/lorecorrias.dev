@@ -10,7 +10,7 @@ title = "just's blog"
   dateFormat = "2 January 2006"
   description = "Just a small blog to dump my CTF writeups and some other stuff I find cool"
 
-[author]
+[params.author]
   name = "Lorenzo Corrias"
   image = "img/author.png"
   headline = "Student @ [UniCA](https://unica.it), CTF player @ [srdnlen](https://srdnlen.it), [whoami](/about)"
