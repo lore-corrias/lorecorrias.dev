@@ -1,3 +1,3 @@
-# justlel.me
+# lorecorrias.dev
 
-Repo for my personal website that I self-host
+Repo for my personal blog!

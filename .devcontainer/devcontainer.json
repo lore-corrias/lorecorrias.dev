@@ -1,0 +1,54 @@
+{
+  "name": "blog-dc",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "service": "blog-dc",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "upgradePackages": true,
+      "installOhMyZsh": false,
+      "installOhMyZshConfig": false,
+      "username": "none"
+    }
+  },
+  "containerEnv": {
+    "LANG": "en_US.UTF-8",
+    "LANGUAGE": "en_US:en",
+  },
+  "runArgs": [
+    "--init",
+    "--cap-add=CAP_MKNOD",
+    "--cap-add=NET_ADMIN",
+    "--cap-add=SYS_ADMIN",
+    "--cap-add=SYS_RESOURCE",
+    "--device",
+    "/dev/fuse",
+    "--device",
+    "/dev/kvm",
+    "--security-opt",
+    "seccomp=unconfined",
+    "--security-opt",
+    "label=disable",
+    "--security-opt",
+    "apparmor=unconfined",
+    "--userns=host",
+    "-v",
+    "/run/user/1000/podman/podman.sock:/var/run/podman.sock:Z",
+    "-v",
+    "/run/user/1000/docker.sock:/var/run/docker.sock:Z",
+    "-v",
+    "/var/run/libvirt/:/var/run/libvirt/",
+    "--hostname=blog-dc",
+    "--add-host",
+    "host.containers.internal:host-gateway",
+    "--network",
+    "host"
+  ],
+  "remoteUser": "root",
+  "containerUser": "root"
+}
