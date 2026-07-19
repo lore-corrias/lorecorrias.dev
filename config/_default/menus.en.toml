@@ -11,13 +11,13 @@
 # ordered by weight from lowest to highest.
 
 [[main]]
-name = "CTF Writeups"
+name = "Cybersecurity"
 #pre = "ctf"
-pageRef = "posts/ctf"
+pageRef = "posts/security"
 weight = 10
 
 [[main]]
-name = "Home Lab"
+name = "Homelab"
 pageRef = "posts/homelab"
 weight = 20
 
@@ -30,18 +30,6 @@ weight = 30
 identifier = "github"
 pre = "github"
 url = "https://github.com/lore-corrias"
-weight = 600
-
-[[main]]
-identifier = "hackthebox"
-pre = "hackthebox"
-url = "https://app.hackthebox.com/users/884312"
-weight = 600
-
-[[main]]
-identifier = "tryhackme"
-pre = "tryhackme"
-url = "https://tryhackme.com/p/justlel"
 weight = 600
 
 

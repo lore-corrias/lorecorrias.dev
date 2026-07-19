@@ -1,0 +1,68 @@
+# action taken from https://www.caktusgroup.com/blog/2025/08/20/how-to-deploy-a-hugo-site-to-cloudflare-pages-with-github-actions/
+
+on:
+  # This will deploy the production site when changes are pushed to the "main" branch.
+  # The branch name should be the one you set up as the "Production branch" in your Cloudflare Pages project.
+  push:
+    branches: [main]
+  # Allow manual deploys via the GitHub Actions Web UI.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch all history for Hugo's .GitInfo and .Lastmod
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Cache Hugo resources
+        uses: actions/cache@v3
+        with:
+          path: resources/_gen
+          key: ${{ runner.os }}-hugo-resources-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-hugo-resources-${{ github.ref_name }}-
+            ${{ runner.os }}-hugo-resources-main-
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ github.ref_name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ github.ref_name }}-
+            ${{ runner.os }}-node-main-
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with: # Update the Hugo version if necessary.
+          hugo-version: "0.164.0"
+          extended: true
+
+      - name: Build
+        run: hugo --minify --logLevel=debug
+
+      - name: Deploy
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        # Update 'your-project-name' below
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Deploy using `page deploy` wrangler command
+          # See: https://developers.cloudflare.com/workers/wrangler/commands/#deploy-1
+          command: pages deploy public --project-name=lorecorrias-dev --commit-dirty --branch ${{ github.ref_name }}
+
+      - name: Print deployment URL
+        run: echo "${{ steps.deploy.outputs.deployment-url }}"
