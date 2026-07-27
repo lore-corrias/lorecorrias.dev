@@ -32,7 +32,32 @@ Now that the repeater is set up, the Lenovo laptop (**Lancelot**) can be connect
 
 ## Proxmox
 
-Once Lancelot was connected to the repeater, installing Proxmox was straightforward: just download the [official ISO](https://www.proxmox.com/en/downloads/proxmox-virtual-environment/iso), flash it on a drive, and follow the installation instructions. I went with the default options: I named my main VM node `pve` and called the bridge network to the home LAN `vmbr0`. Since I did not purchase a license, I also had to add the `no-subscription` APT repositories to receive updates.
+Once Lancelot was connected to the repeater, installing Proxmox was straightforward: just download the [official ISO](https://www.proxmox.com/en/downloads/proxmox-virtual-environment/iso), flash it on a drive, and follow the installation instructions.
+
+### Miscellaneous
+
+I went with the default options: I named my main VM node `pve` and called the bridge network to the home LAN `vmbr0`. Since I did not purchase a license, I also had to add the `no-subscription` APT repositories to receive updates.
+
+I also made sure to create a user to allow accessing SSH securely for Terraform operations, as described by [the provider's docs](https://bpg.sh/docs/?utm_source=chatgpt.com#when-is-ssh-required):
+
+```bash
+# Add a user named 'terraform'
+useradd -m terraform
+
+# Install sudo
+apt install -y sudo
+
+# Add the possibility to execute the following commands as sudo:
+#terraform ALL=(root) NOPASSWD: /usr/sbin/pvesm
+#terraform ALL=(root) NOPASSWD: /usr/sbin/qm
+#terraform ALL=(root) NOPASSWD: /usr/bin/tee /var/lib/vz/snippets/[a-zA-Z0-9_][a-zA-Z0-9_.-]*
+#terraform ALL=(root) NOPASSWD: /usr/bin/sed -i * /etc/pve/lxc/*.conf
+#terraform ALL=(root) NOPASSWD: /usr/bin/tee -a /etc/pve/lxc/*.conf
+visudo -f /etc/sudoers.d/terraform
+
+# Copy the public ssh key
+echo "$PUBLIC_SSH_KEY" > /home/terraform/.ssh/authorized_keys
+```
 
 ### Disks
 
@@ -103,6 +128,9 @@ Another very useful option to enable is automatic configuration backup on pfSens
 
 ![](./pfsense-backup.png)
 
+> [!NOTE] `qemu-user-agent`
+> In order to allow Proxmox to query the status of the pfSense VM, it is necessary to install inside it the `qemu-user-agent` service. I managed to do this by executing the script contained in this repository: [https://github.com/Weehooey/pfSense-scripts](https://github.com/Weehooey/pfSense-scripts)
+
 #### VLANs
 
 Once pfSense was running, I went to set up the two VLANs that were previously described, `10` and `20`:
@@ -132,6 +160,16 @@ In pfSense, these ranges are configured in a `Network(s)` alias, not a `Host(s)`
 To make rules more manageable (in case more VLANs have to be added in the future), I created an interface group named `ISOLATED_VLANS`, containing both `HOMELAB_VLAN10` and `HOMELAB_VLAN20`. This way, I could add firewall rules to it and have them apply to each VLAN. The final firewall rules look like this for both interfaces:
 
 ![The firewall rule for the two Homelab VLANs](./pfsense-firewalls.png "The firewall rule for the two Homelab VLANs")
+
+Furthermore, I would like to add a third VLAN with id `99`, which will be dedicated to management of devices under VLAN `10` and `20`. The idea is that devices under this VLAN have their traffic routed by pfSense to devices under `10` and `20`, and can receive traffic from the home network. This way, an administrator can use any device connected inside it as an "SSH jump box" to reach the others. The subnet reserved will be `192.168.99.0/24`. The firewall configuration looks like this:
+
+![](./pfsense-vlan99-firewall.png)
+
+Then, the actual Bastion host (`BASTION_HOST` alias) will be under `192.168.99.2/24`, meaning that to reach from the host network I need to add a NAT rule:
+
+![](./pfsense-vlan99-nat.png)
+
+Finally, I had to reserve the static mapping of `192.168.99.2/24` in the DHCP server. However, this can only be done once I actually know the MAC of the Bastion host, which will be configured in the next post.
 
 #### VPNs
 

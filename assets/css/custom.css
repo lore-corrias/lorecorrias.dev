@@ -1,5 +1,7 @@
 /* Background */ .bg { color: #f5a97f; background-color: #24273a; }
 /* PreWrapper */ .chroma-custom { color: #f5a97f; background-color: #24273a; }
+.highlight-wrapper .codeblock-title { color: #cad3f5; background-color: #24273a; border-color: #363a4f; }
+.chroma-custom.command-output { color: #cad3f5; }
 /* Other */ .chroma-custom .x {  }
 /* Error */ .chroma-custom .err { color: #ed8796 }
 /* CodeLine */ .chroma-custom .cl {  }
